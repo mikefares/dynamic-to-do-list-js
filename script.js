@@ -3,8 +3,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskInput = document.getElementById('task-input');
     const taskList = document.getElementById('task-list');
 
-    function addTask() {
-        const taskText = taskInput.value.trim();
+    function saveTasksToLocalStorage() {
+        const currentTasks = [];
+        taskList.querySelectorAll('li').forEach(li => {
+            currentTasks.push(li.firstChild.textContent);
+        });
+        localStorage.setItem('tasks', JSON.stringify(currentTasks));
+    }
+
+    function addTask(taskText, save = true) {
+        taskText = taskText.trim();
 
         if (taskText === "") {
             alert('Please enter a task.');
@@ -16,23 +24,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const removeButton = document.createElement('button');
         removeButton.textContent = "Remove";
-        // Changed from .className to .classList.add()
         removeButton.classList.add('remove-btn');
+
         removeButton.addEventListener('click', function() {
             taskList.removeChild(listItem);
+            saveTasksToLocalStorage();
         });
 
         listItem.appendChild(removeButton);
         taskList.appendChild(listItem);
 
-        taskInput.value = '';
+        if (save) {
+            taskInput.value = '';
+        }
+
+        if (save) {
+            saveTasksToLocalStorage();
+        }
     }
 
-    addButton.addEventListener('click', addTask);
+    function loadTasks() {
+        const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        storedTasks.forEach(taskText => addTask(taskText, false));
+    }
+
+    addButton.addEventListener('click', () => {
+        addTask(taskInput.value, true);
+    });
 
     taskInput.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
-            addTask();
+            addTask(taskInput.value, true);
         }
     });
+
+    loadTasks();
 });
